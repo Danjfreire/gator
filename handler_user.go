@@ -61,3 +61,30 @@ func handleRegister(s *state, cmd command) error {
 	fmt.Println("user:", user)
 	return nil
 }
+
+func handleReset(s *state, cmd command) error {
+	err := s.db.DeleteUsers(context.Background())
+	if err != nil {
+		log.Fatal("Error deleting users:", err)
+	}
+
+	return nil
+}
+
+func handleListUsers(s *state, cmd command) error {
+	users, err := s.db.ListUsers(context.Background())
+	if err != nil {
+		log.Fatal("Error listing users:", err)
+	}
+
+	for _, u := range users {
+		if u.Name == s.cfg.CurrentUserName {
+			fmt.Printf("* %v (current)\n", u.Name)
+
+		} else {
+			fmt.Printf("* %v\n", u.Name)
+		}
+	}
+
+	return nil
+}
