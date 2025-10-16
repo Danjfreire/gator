@@ -20,3 +20,8 @@ DELETE FROM users;
 -- name: ListUsers :many
 SELECT id, created_at, updated_at, name
 FROM users;
+
+-- name: FindManyUsersById :many
+SELECT id, created_at, updated_at, name
+FROM users
+WHERE id = ANY(sqlc.arg('ids')::uuid[]);

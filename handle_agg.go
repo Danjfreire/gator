@@ -14,6 +14,13 @@ func handleAgg(s *state, cmd command) error {
 		return err
 	}
 
+	printRSSFeed(*feed)
+
+	return nil
+}
+
+func printRSSFeed(feed RSSFeed) {
+
 	fmt.Println("Feed Title:", feed.Channel.Title)
 	fmt.Println("Feed Link:", feed.Channel.Link)
 	fmt.Println("Feed Description:", feed.Channel.Description)
@@ -26,6 +33,4 @@ func handleAgg(s *state, cmd command) error {
 		fmt.Println("Item PubDate:", item.PubDate)
 		fmt.Println()
 	}
-
-	return nil
 }
