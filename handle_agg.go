@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"log"
 	"time"
+
+	"github.com/Danjfreire/gator/internal/database"
+	"github.com/google/uuid"
 )
 
 func handleAgg(s *state, cmd command) error {
@@ -29,23 +32,40 @@ func handleAgg(s *state, cmd command) error {
 
 func scrapeFeeds(s *state) {
 	ctx := context.Background()
-	nextToFetch, err := s.db.GetNextFeedToFetch(ctx)
+	feed, err := s.db.GetNextFeedToFetch(ctx)
 	if err != nil {
 		fmt.Println("Couldn't get next feed to fetch:", err)
 		return
 	}
 
-	s.db.MarkFeedFetched(ctx, nextToFetch.ID)
+	s.db.MarkFeedFetched(ctx, feed.ID)
 
-	feed, err := fetchFeed(ctx, nextToFetch.Url)
+	rssFeed, err := fetchFeed(ctx, feed.Url)
 	if err != nil {
 		fmt.Println("Error fetching feed:", err)
 		return
 	}
 
-	for _, item := range feed.Channel.Item {
+	for _, item := range rssFeed.Channel.Item {
 		fmt.Printf("Found post: %v\n", item.Title)
+		t, err := time.Parse(time.RFC1123, item.PubDate)
+
+		if err != nil {
+			fmt.Println("Error parsing publication date:", err)
+			continue
+		}
+
+		s.db.CreatePost(ctx, database.CreatePostParams{
+			ID:          uuid.New(),
+			CreatedAt:   time.Now(),
+			UpdatedAt:   time.Now(),
+			Title:       item.Title,
+			Url:         item.Link,
+			Description: item.Description,
+			PublishedAt: t,
+			FeedID:      feed.ID,
+		})
 	}
 
-	fmt.Printf("Feed %v fetched successfully! %v posts found!\n", nextToFetch.Url, len(feed.Channel.Item))
+	fmt.Printf("Feed %v fetched successfully! %v posts found!\n", feed.Url, len(rssFeed.Channel.Item))
 }
