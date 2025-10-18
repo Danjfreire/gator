@@ -10,7 +10,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func handleAddFeed(s *state, cmd command) error {
+func handleAddFeed(s *state, cmd command, user database.User) error {
 	if len(cmd.Args) < 2 {
 		log.Fatal("Usage: go run . add_feed <name> <url>")
 	}
@@ -18,14 +18,7 @@ func handleAddFeed(s *state, cmd command) error {
 	name := cmd.Args[0]
 	url := cmd.Args[1]
 
-	userName := s.cfg.CurrentUserName
 	ctx := context.Background()
-
-	user, err := s.db.GetUser(ctx, userName)
-	if err != nil {
-		log.Fatal("Error getting user:", err)
-	}
-
 	feed, err := s.db.CreateFeed(ctx, database.CreateFeedParams{
 		ID:        uuid.New(),
 		CreatedAt: time.Now(),

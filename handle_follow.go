@@ -10,7 +10,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func handleFollow(s *state, cmd command) error {
+func handleFollow(s *state, cmd command, user database.User) error {
 	if len(cmd.Args) < 1 {
 		log.Fatal("Usage: go run . follow <feed_url>")
 	}
@@ -22,11 +22,6 @@ func handleFollow(s *state, cmd command) error {
 	feed, err := s.db.FindFeedByUrl(ctx, feedURL)
 	if err != nil {
 		log.Fatalf("Feed not found: %v", feedURL)
-	}
-
-	user, err := s.db.GetUser(ctx, s.cfg.CurrentUserName)
-	if err != nil {
-		log.Fatal("Error getting user:", err)
 	}
 
 	now := time.Now()
